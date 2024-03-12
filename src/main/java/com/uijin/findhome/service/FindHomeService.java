@@ -66,8 +66,13 @@ public class FindHomeService {
           }
         }
       }
+
     }
-    sendNewHomeMessage(newHome);
+    if(!init) {
+      init = true;
+    } else {
+      sendNewHomeMessage(newHome);
+    }
     System.out.println(LocalDateTime.now() + " - " + homeList.size());
   }
 
