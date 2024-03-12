@@ -7,7 +7,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "zigbangClient", url =  "https://apis.zigbang.com/v2/items/list")
+@FeignClient(name = "ZigbangClient", url =  "https://apis.zigbang.com/v2/items/list")
 public interface ZigbangClient {
   @PostMapping
   Response getList(@RequestBody ZigBangRequest zigBangRequest);

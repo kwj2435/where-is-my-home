@@ -17,7 +17,6 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -31,9 +30,8 @@ public class FindHomeService {
   private boolean init = false;
   private Set<Integer> homeList = new HashSet<>();
 
-  @Scheduled(cron = "0/15 * * * * ?")
+  @Scheduled(cron = "0 0/1 * * * *")
   public void findHome() throws IOException {
-    Response list = zigbangClient.getList(new ZigBangRequest(new ArrayList<>(){{add(39462023);}}));
     List<String> geoHashList = new ArrayList<>(){
       {add("wydjtz");
       add("wydjtx");
@@ -72,8 +70,21 @@ public class FindHomeService {
 
       // 신규 매물 알림 전송
       if(!newHome.isEmpty()) {
-        Response test = zigbangClient.getList(new ZigBangRequest(newHome));
-        telegramClient.sendMessage(new TelegramMessage("6645481472", "String.valueOf(itemId)"));
+        Response zigbangResponse = zigbangClient.getList(new ZigBangRequest(newHome));
+
+        // JSON 파싱
+        JsonObject zigbangJsonObject = JsonParser.parseString(zigbangResponse.body().toString()).getAsJsonObject();
+
+        // "items" 배열에서 첫 번째 객체 가져오기
+        JsonArray zigbangItems = zigbangJsonObject.getAsJsonArray("items");
+
+        for(JsonElement element : zigbangItems) {
+          JsonObject item = element.getAsJsonObject();
+          int deposit = item.get("deposit").getAsInt();
+          String localText = item.getAsJsonObject("addressOrigin").get("localText").getAsString();
+
+          telegramClient.sendMessage(new TelegramMessage("6645481472", localText + " " + deposit));
+        }
       }
     }
   }

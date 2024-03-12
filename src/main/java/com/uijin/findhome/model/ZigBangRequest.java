@@ -8,5 +8,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ZigBangRequest {
 
-  private List<Integer> room_ids;
+  private List<Integer> item_ids;
 }
