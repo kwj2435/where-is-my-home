@@ -33,6 +33,7 @@ public class FindHomeService {
 
   @Scheduled(cron = "0 0/3 * * * *")
   public void findHome() throws IOException {
+    List<Integer> newHome = new ArrayList<>();
     List<String> geoHashList = new ArrayList<>(){
       {add("wydjtz");
       add("wydjtx");
@@ -43,7 +44,7 @@ public class FindHomeService {
     };
 
     for (String geoHash : geoHashList) {
-      List<Integer> newHome = new ArrayList<>();
+
       String url = "https://apis.zigbang.com/v2/items/villa?geohash=" + geoHash
           + "&depositMin=0&depositMax=25000&salesTypes%5B0%5D=%EC%A0%84%EC%84%B8&domain=zigbang&checkAnyItemWithoutFilter=true";
       Document docs = Jsoup.connect(url).ignoreContentType(true).get();
@@ -65,8 +66,8 @@ public class FindHomeService {
           }
         }
       }
-      sendNewHomeMessage(newHome);
     }
+    sendNewHomeMessage(newHome);
     System.out.println(LocalDateTime.now() + " - " + homeList.size());
   }
 
