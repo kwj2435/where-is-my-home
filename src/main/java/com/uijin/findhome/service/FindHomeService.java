@@ -10,6 +10,7 @@ import com.uijin.findhome.model.TelegramMessage;
 import com.uijin.findhome.model.ZigBangRequest;
 import feign.Response;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -30,7 +31,7 @@ public class FindHomeService {
   private boolean init = false;
   private Set<Integer> homeList = new HashSet<>();
 
-  @Scheduled(cron = "0 0/1 * * * *")
+  @Scheduled(cron = "0 0/3 * * * *")
   public void findHome() throws IOException {
     List<String> geoHashList = new ArrayList<>(){
       {add("wydjtz");
@@ -41,15 +42,13 @@ public class FindHomeService {
       add("wydmgg");}
     };
 
-    List<Integer> newHome = new ArrayList<>();
     for (String geoHash : geoHashList) {
+      List<Integer> newHome = new ArrayList<>();
       String url = "https://apis.zigbang.com/v2/items/villa?geohash=" + geoHash
           + "&depositMin=0&depositMax=25000&salesTypes%5B0%5D=%EC%A0%84%EC%84%B8&domain=zigbang&checkAnyItemWithoutFilter=true";
       Document docs = Jsoup.connect(url).ignoreContentType(true).get();
 
-      String s = docs.body().text();
-
-      JsonElement jsonElement = JsonParser.parseString(s);
+      JsonElement jsonElement = JsonParser.parseString(docs.body().text());
       JsonObject jsonObject = jsonElement.getAsJsonObject();
       JsonArray itemsArray = jsonObject.getAsJsonArray("items");
 
@@ -61,30 +60,30 @@ public class FindHomeService {
           homeList.add(itemId);
         } else {
           if(!homeList.contains(itemId)) {
-
             homeList.add(itemId);
             newHome.add(itemId);
           }
         }
       }
+      sendNewHomeMessage(newHome);
+    }
+    System.out.println(LocalDateTime.now() + " - " + homeList.size());
+  }
 
-      // 신규 매물 알림 전송
-      if(!newHome.isEmpty()) {
-        Response zigbangResponse = zigbangClient.getList(new ZigBangRequest(newHome));
+  // 신규 매물 알림 전송
+  private void sendNewHomeMessage(List<Integer> newHome) {
+    if(!newHome.isEmpty()) {
+      Response zigbangResponse = zigbangClient.getList(new ZigBangRequest(newHome));
 
-        // JSON 파싱
-        JsonObject zigbangJsonObject = JsonParser.parseString(zigbangResponse.body().toString()).getAsJsonObject();
+      JsonObject zigbangJsonObject = JsonParser.parseString(zigbangResponse.body().toString()).getAsJsonObject();
+      JsonArray zigbangItems = zigbangJsonObject.getAsJsonArray("items");
 
-        // "items" 배열에서 첫 번째 객체 가져오기
-        JsonArray zigbangItems = zigbangJsonObject.getAsJsonArray("items");
+      for(JsonElement element : zigbangItems) {
+        JsonObject item = element.getAsJsonObject();
+        int deposit = item.get("deposit").getAsInt();
+        String localText = item.getAsJsonObject("addressOrigin").get("localText").getAsString();
 
-        for(JsonElement element : zigbangItems) {
-          JsonObject item = element.getAsJsonObject();
-          int deposit = item.get("deposit").getAsInt();
-          String localText = item.getAsJsonObject("addressOrigin").get("localText").getAsString();
-
-          telegramClient.sendMessage(new TelegramMessage("6645481472", localText + " " + deposit));
-        }
+        telegramClient.sendMessage(new TelegramMessage("6645481472", localText + " " + deposit));
       }
     }
   }
