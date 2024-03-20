@@ -18,35 +18,47 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 
-@Service
 @RequiredArgsConstructor
 public class FindHomeService {
+
+  @Value("${telegram.chatId}")
+  private final String CHAT_ID;
 
   private final TelegramClient telegramClient;
   private final ZigbangClient zigbangClient;
 
+  private final Set<Integer> homeList = new HashSet<>();
   private boolean init = false;
-  private Set<Integer> homeList = new HashSet<>();
 
   @Scheduled(cron = "0 0/3 * * * *")
   public void findHome() throws IOException {
+    String depositMit = "0";
+    String depositMax = "25000";
     List<Integer> newHome = new ArrayList<>();
+
+    // geohash 범위에 대한 매물 탐색
+    // https://www.movable-type.co.uk/scripts/geohash.html
     List<String> geoHashList = new ArrayList<>(){
       {add("wydjtz");
       add("wydjtx");
       add("wydjtw");
       add("wydjty");
       add("wydjty");
-      add("wydmgg");}
+      add("wydmgg");
+      add("wydj7d");
+      add("wydj79");}
     };
 
     for (String geoHash : geoHashList) {
 
-      String url = "https://apis.zigbang.com/v2/items/villa?geohash=" + geoHash
-          + "&depositMin=0&depositMax=25000&salesTypes%5B0%5D=%EC%A0%84%EC%84%B8&domain=zigbang&checkAnyItemWithoutFilter=true";
+      String url = "https://apis.zigbang.com/v2/items/villa?geohash="
+              + geoHash
+              + "&depositMin=" + depositMit
+              + "&depositMax=" + depositMax
+              + "&salesTypes%5B0%5D=%EC%A0%84%EC%84%B8&domain=zigbang&checkAnyItemWithoutFilter=true";
       Document docs = Jsoup.connect(url).ignoreContentType(true).get();
 
       JsonElement jsonElement = JsonParser.parseString(docs.body().text());
@@ -89,7 +101,7 @@ public class FindHomeService {
         int deposit = item.get("deposit").getAsInt();
         String localText = item.getAsJsonObject("addressOrigin").get("localText").getAsString();
 
-        telegramClient.sendMessage(new TelegramMessage("6645481472", localText + " " + deposit));
+        telegramClient.sendMessage(new TelegramMessage(String.valueOf(CHAT_ID), localText + " " + deposit));
       }
     }
   }
