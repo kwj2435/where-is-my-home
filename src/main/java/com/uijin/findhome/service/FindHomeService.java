@@ -20,12 +20,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
+@Service
 @RequiredArgsConstructor
 public class FindHomeService {
-
-  @Value("${telegram.chatId}")
-  private final String CHAT_ID;
 
   private final TelegramClient telegramClient;
   private final ZigbangClient zigbangClient;
@@ -42,14 +41,26 @@ public class FindHomeService {
     // geohash 범위에 대한 매물 탐색
     // https://www.movable-type.co.uk/scripts/geohash.html
     List<String> geoHashList = new ArrayList<>(){
+      // 신방화역
       {add("wydjtz");
       add("wydjtx");
       add("wydjtw");
       add("wydjty");
       add("wydjty");
+      // 상봉역
       add("wydmgg");
+      add("wydmgu");
+      // 부평시장
       add("wydj7d");
-      add("wydj79");}
+      add("wydj79");
+      // 영등포
+      add("wydjrq");
+      add("wydjrw");
+      add("wydjry");
+      add("wydjrx");
+      add("wydjrz");
+      add("wydjrr");
+      }
     };
 
     for (String geoHash : geoHashList) {
@@ -101,7 +112,7 @@ public class FindHomeService {
         int deposit = item.get("deposit").getAsInt();
         String localText = item.getAsJsonObject("addressOrigin").get("localText").getAsString();
 
-        telegramClient.sendMessage(new TelegramMessage(String.valueOf(CHAT_ID), localText + " " + deposit));
+        telegramClient.sendMessage(new TelegramMessage("6645481472", localText + " " + deposit));
       }
     }
   }
