@@ -41,25 +41,28 @@ public class FindHomeService {
     // geohash 범위에 대한 매물 탐색
     // https://www.movable-type.co.uk/scripts/geohash.html
     List<String> geoHashList = new ArrayList<>(){
-      // 신방화역
-      {add("wydjtz");
-      add("wydjtx");
-      add("wydjtw");
-      add("wydjty");
-      add("wydjty");
-      // 상봉역
-      add("wydmgg");
-      add("wydmgu");
+
+      {
+        add("wydmec");
+        // 신방화역
+//        add("wydjtz");
+//        add("wydjtx");
+//        add("wydjtw");
+//        add("wydjty");
+//        add("wydjty");
+//      // 상봉역
+//      add("wydmgg");
+//      add("wydmgu");
       // 부평시장
-      add("wydj7d");
-      add("wydj79");
+//      add("wydj7d");
+//      add("wydj79");
       // 영등포
-      add("wydjrq");
-      add("wydjrw");
-      add("wydjry");
-      add("wydjrx");
-      add("wydjrz");
-      add("wydjrr");
+//      add("wydjrq");
+//      add("wydjrw");
+//      add("wydjry");
+//      add("wydjrx");
+//      add("wydjrz");
+//      add("wydjrr");
       }
     };
 
