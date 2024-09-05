@@ -44,6 +44,11 @@ public class FindHomeService {
 
       {
         add("wydmec");
+        // 군자역
+        add("wydmes");
+        add("wydmeu");
+        add("wydmet");
+        add("wydmev");
         // 신방화역
 //        add("wydjtz");
 //        add("wydjtx");
